@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import HankoProfile from "../components/HankoProfile";
+
 
 const Home = () => (
   <section className="text-center space-y-6">
@@ -14,6 +16,7 @@ const Home = () => (
     >
       Browse Products
     </Link>
+    <HankoProfile/>
   </section>
 );
 

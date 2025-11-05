@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import HankoProfile from './components/HankoProfile';
 
 const App = () => (
   <div className="flex flex-col min-h-screen">
@@ -25,6 +26,7 @@ const App = () => (
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<HankoProfile />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </main>

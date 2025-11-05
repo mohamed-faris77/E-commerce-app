@@ -2,6 +2,11 @@ import { Link, NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { SunIcon, MoonIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import famazonLogo from '../assets/famazon.png';
+import { useState, useEffect } from 'react';
+import { Hanko } from '@teamhanko/hanko-elements';
+
+const hankoApi = import.meta.env.VITE_HANKO_API_URL;
+const hanko = new Hanko(hankoApi);
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -11,6 +16,37 @@ const navItems = [
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const user = await hanko.user.getCurrent();
+        setIsLoggedIn(!!user);
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkSession();
+
+    hanko.onSessionCreated(() => {
+      setIsLoggedIn(true);
+    });
+
+    hanko.onSessionExpired(() => {
+      setIsLoggedIn(false);
+    });
+  }, []);
+
+  const logout = async () => {
+    try {
+      await hanko.user.logout();
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow">
@@ -34,6 +70,35 @@ const Navbar = () => {
               {label}
             </NavLink>
           ))}
+          {isLoggedIn ? (
+            <>
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  `hover:underline ${isActive ? 'text-blue-600 dark:text-blue-400' : ''
+                  }`
+                }
+              >
+                Profile
+              </NavLink>
+              <button
+                onClick={logout}
+                className="hover:underline text-red-600 dark:text-red-400"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                `hover:underline ${isActive ? 'text-blue-600 dark:text-blue-400' : ''
+                }`
+              }
+            >
+              Login
+            </NavLink>
+          )}
         </nav>
 
         {/* Right controls */}
