@@ -1,23 +1,16 @@
+// pages/Home.jsx
 import { Link } from 'react-router-dom';
-import HankoProfile from "../components/HankoProfile";
 
 
-const Home = () => (
-  <section className="text-center space-y-6">
-    <h1 className="text-4xl font-bold">
-      Welcome to <span className="text-blue-600">MyShop</span>
-    </h1>
-    <p className="max-w-lg mx-auto">
-      Discover the best products at unbeatable prices.
-    </p>
-    <Link
-      to="/products"
-      className="inline-block bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
-    >
-      Browse Products
-    </Link>
-    <HankoProfile/>
-  </section>
+function Home() {
+return (
+<section className="text-center py-10">
+<h2 className="text-3xl font-semibold mb-4">Welcome to Famazon</h2>
+<p className="text-lg opacity-80 mb-6">Your one-stop destination for modern shopping.</p>
+<Link to="/products" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Shop Now</Link>
+</section>
 );
+}
+
 
 export default Home;

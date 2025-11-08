@@ -1,25 +1,22 @@
+// components/ProductCard.jsx
 import { Link } from 'react-router-dom';
 
-const ProductCard = ({ product }) => (
-  <div className="bg-white dark:bg-gray-800 shadow rounded overflow-hidden">
-    <Link to={`/products/${product.id}`}>
-      <img
-        src={product.image}
-        alt={product.name}
-        className="h-48 w-full object-cover"
-      />
-    </Link>
-    <div className="p-4">
-      <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-      <p className="text-gray-500 mb-4">${product.price}</p>
-      <Link
-        to={`/products/${product.id}`}
-        className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        View
-      </Link>
-    </div>
-  </div>
+
+function ProductCard({ product }) {
+return (
+<div className="border rounded-2xl overflow-hidden shadow hover:shadow-lg transition-all">
+<img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
+<div className="p-4">
+<h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+<p className="text-gray-500 mb-2">${product.price}</p>
+<div className="flex justify-between items-center">
+<Link to={`/product/${product.id}`} className="text-blue-500 hover:underline">More Info</Link>
+<button className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700">Add to Cart</button>
+</div>
+</div>
+</div>
 );
+}
+
 
 export default ProductCard;

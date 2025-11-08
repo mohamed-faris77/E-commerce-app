@@ -1,1 +1,24 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles below this line */
+:root {
+  --bg: #ffffff;
+  --text: #000000;
+}
+
+body {
+  @apply transition-colors duration-300;
+  /* background-image: url('../assets/famazon.png'); */
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.theme-card {
+  @apply border rounded-lg p-4;
+}

@@ -1,11 +1,12 @@
-const AdminDashboard = () => (
-  <div>
-    <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-    <p className="mt-4">
-      This section is only for admins. We’ll hook it up with authentication &
-      protected routes later.
-    </p>
-  </div>
+// pages/AdminDashboard.jsx
+function AdminDashboard() {
+return (
+<div className="text-center">
+<h2 className="text-2xl font-semibold mb-4">Admin Dashboard</h2>
+<p className="opacity-70">Manage products, users, and orders here.</p>
+</div>
 );
+}
+
 
 export default AdminDashboard;
