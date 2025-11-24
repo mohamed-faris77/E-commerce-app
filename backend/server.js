@@ -3,6 +3,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
@@ -21,6 +24,9 @@ app.use(cookieParser());
 
 // routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // a sample protected admin route
 import { protect, authorizeRoles } from './middleware/auth.js';

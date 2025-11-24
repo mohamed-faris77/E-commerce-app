@@ -1,76 +1,155 @@
-// components/Navbar.jsx
-import { Link, useNavigate } from "react-router-dom";
-import { Moon, Sun } from "lucide-react";
-import { useAuth } from "../context/AuthContext.jsx";
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingCart, Search, User, Globe, Menu, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 function Navbar({ theme, setTheme }) {
-  const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  useEffect(() => {
+    // Check localStorage for user info whenever the route changes
+    const user = JSON.parse(localStorage.getItem('userInfo'));
+    setUserInfo(user);
+  }, [location]);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const count = cart.reduce((acc, item) => acc + Number(item.qty), 0);
+      setCartCount(count);
+    };
+
+    updateCartCount();
+
+    window.addEventListener('cartUpdated', updateCartCount);
+    window.addEventListener('storage', updateCartCount);
+
+    return () => {
+      window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('storage', updateCartCount);
+    };
+  }, []);
+
+  const logoutHandler = () => {
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('token');
+    setUserInfo(null);
+    setCartCount(0);
+    navigate('/login');
   };
 
   return (
-    <nav className="flex justify-between items-center px-6 py-4 shadow-md dark:shadow-gray-800 bg-white dark:bg-gray-900 transition-colors">
-      {/* Brand / Logo */}
-      <Link
-        to="/"
-        className="text-2xl font-bold tracking-wide text-gray-800 dark:text-white"
-      >
-        Famazon!
-      </Link>
+    <nav className="border-b bg-white dark:bg-gray-900 px-4 py-2 fixed w-full z-50">
+      {/* Desktop Navbar */}
+      <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto">
+        {/* Left links */}
+        <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
+          <Link to="/" className="font-bold text-lg mr-4">Famazon</Link>
+          <Link to="/eletronics" className="hover:underline">Electronics</Link>
+          <Link to="/mobile" className="hover:underline">Mobile</Link>
+          <Link to="/homeandkitchen" className="hover:underline">Kitchen & Home</Link>
+          <Link to="/fashion" className="hover:underline">Fashion</Link>
+        </div>
 
-      {/* Nav Links */}
-      <div className="flex items-center gap-6 text-gray-700 dark:text-gray-200">
-        <Link to="/" className="hover:text-blue-600">
-          Home
-        </Link>
-        <Link to="/products" className="hover:text-blue-600">
-          Shop
-        </Link>
-        <Link to="/contact" className="hover:text-blue-600">
-          Contact
-        </Link>
-        <Link to="/about" className="hover:text-blue-600">
-          About
-        </Link>
-
-        {/* Show Dashboard only if Admin */}
-        {user?.role === "admin" && (
-          <Link to="/admin" className="hover:text-blue-600">
-            Dashboard
-          </Link>
-        )}
-
-        {/* Cart Icon */}
-        <Link to="/cart" className="relative text-xl hover:text-blue-600">
-          🛒
-        </Link>
-
-        {/* Login / Logout Logic */}
-        {user ? (
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition"
-          >
-            Logout
+        {/* Center search bar */}
+        <div className="flex flex-grow max-w-xl mx-4">
+          <input
+            type="text"
+            placeholder="Search Famazon"
+            className="flex-grow rounded-l-md border border-gray-300 p-2 focus:outline-none"
+          />
+          <button className="bg-yellow-400 p-2 rounded-r-md hover:bg-yellow-500">
+            <Search size={20} />
           </button>
-        ) : (
-          <Link to="/login" className="text-xl hover:text-blue-600">
-            👤
-          </Link>
-        )}
+        </div>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-full border border-gray-400 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/* Right icons & links */}
+        <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300 text-sm">
+          <button className="flex items-center gap-1 hover:underline">
+            <Globe size={18} /> EN
+          </button>
+          <Link to="/customer" className="hover:underline hidden lg:inline">Customer Service</Link>
+
+          {userInfo && (
+            <Link to="/cart" className="relative hover:underline">
+              <ShoppingCart size={24} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {userInfo ? (
+            <div className="flex items-center gap-3">
+              <span className="font-semibold">Hi, {userInfo.name}</span>
+              {userInfo.role === 'admin' && (
+                <Link to="/admin" className="text-blue-500 hover:underline">Admin</Link>
+              )}
+              <button onClick={logoutHandler} className="text-red-500 hover:underline">
+                <LogOut size={20} />
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="hover:underline">
+              <User size={24} />
+            </Link>
+          )}
+
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+            {theme === 'dark' ? '🌞' : '🌙'}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Navbar */}
+      <div className="flex md:hidden justify-between items-center">
+        <Link to="/" className="font-bold text-lg">Famazon</Link>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <Menu size={24} />
+          </button>
+          {userInfo && (
+            <Link to="/cart" className="relative">
+              <ShoppingCart size={24} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col space-y-3">
+            {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
+            <Link to="/mobile" onClick={() => setMobileMenuOpen(false)}>Mobile</Link>
+            <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
+            <Link to="/homeandkitchen" onClick={() => setMobileMenuOpen(false)}>Kitchen & Home</Link>
+            <Link to="/fashion" onClick={() => setMobileMenuOpen(false)}>Fashion</Link>
+            <Link to="/customer" onClick={() => setMobileMenuOpen(false)}>Customer Service</Link>
+            {userInfo && userInfo.role === 'admin' && (
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-blue-500">Admin Dashboard</Link>
+            )}
+            {userInfo ? (
+              <button onClick={() => { logoutHandler(); setMobileMenuOpen(false); }} className="text-left text-red-500">Logout</button>
+            ) : (
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+            )}
+            <button onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setMobileMenuOpen(false); }} className="text-left">
+              Toggle Theme {theme === 'dark' ? '🌞' : '🌙'}
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

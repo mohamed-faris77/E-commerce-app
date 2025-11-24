@@ -1,15 +1,35 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { Navigate } from 'react-router-dom';
 
-function ProtectedRoute({ children, role }) {
-  const { user, loading } = useAuth();
+// Protected route for authenticated users
+export const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
-
-  if (!user) return <Navigate to="/login" />;
-  if (role && user.role !== role) return <Navigate to="/" />;
+  if (!token || !userInfo) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
-}
+};
 
-export default ProtectedRoute;
+// Protected route for admin only
+export const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+  if (!token || !userInfo) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" replace />;
+  }
+
+  if (userInfo.role !== 'admin') {
+    // Redirect to home if not admin
+    alert('Access Denied: Admin privileges required');
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+export default { ProtectedRoute, AdminRoute };
