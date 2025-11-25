@@ -7,6 +7,7 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -31,8 +32,10 @@ function AdminDashboard() {
     try {
       const productsRes = await api.get('/products');
       const ordersRes = await api.get('/orders');
+      const contactsRes = await api.get('/contact');
       setProducts(productsRes.data.products);
       setOrders(ordersRes.data);
+      setContacts(contactsRes.data.contacts || []);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -144,10 +147,11 @@ function AdminDashboard() {
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b">
-        <button className={`pb-2 px-4 ${activeTab === 'overview' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
-        <button className={`pb-2 px-4 ${activeTab === 'products' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('products')}>Products</button>
-        <button className={`pb-2 px-4 ${activeTab === 'orders' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('orders')}>Orders</button>
+      <div className="flex gap-4 mb-8 border-b overflow-x-auto">
+        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'overview' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
+        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'products' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('products')}>Products</button>
+        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'orders' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('orders')}>Orders</button>
+        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'contacts' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('contacts')}>Contact Messages</button>
       </div>
 
       {/* Overview Tab */}
@@ -164,6 +168,10 @@ function AdminDashboard() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
             <h3 className="text-xl font-semibold mb-2">Total Products</h3>
             <p className="text-3xl font-bold text-purple-500">{products.length}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
+            <h3 className="text-xl font-semibold mb-2">Contact Messages</h3>
+            <p className="text-3xl font-bold text-orange-500">{contacts.length}</p>
           </div>
         </div>
       )}
@@ -308,6 +316,48 @@ function AdminDashboard() {
               </form>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Contacts Tab */}
+      {activeTab === 'contacts' && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Contact Messages</h2>
+          {contacts.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 p-8 rounded shadow text-center text-gray-500">
+              <p>No contact messages yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {contacts.map(contact => (
+                <div key={contact._id} className="bg-white dark:bg-gray-800 p-6 rounded shadow">
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Name</p>
+                      <p className="font-semibold">{contact.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
+                      <p className="font-semibold text-blue-500 hover:underline cursor-pointer" onClick={() => window.location.href = `mailto:${contact.email}`}>{contact.email}</p>
+                    </div>
+                  </div>
+                  {contact.subject && (
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Subject</p>
+                      <p className="font-semibold">{contact.subject}</p>
+                    </div>
+                  )}
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Message</p>
+                    <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{contact.message}</p>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(contact.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

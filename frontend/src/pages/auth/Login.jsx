@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { migrateCartOnLogin } from '../../utils/cart';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,8 @@ function Login() {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('userInfo', JSON.stringify(data.data));
+      // Migrate guest cart to user cart if applicable
+      migrateCartOnLogin(data.data.id || data.data._id || data.data.email);
       alert(`Welcome back, ${data.data.name}!`);
 
       if (data.data.role === 'admin') {

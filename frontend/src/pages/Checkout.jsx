@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { readCart, clearCart } from '../utils/cart';
 
 function Checkout() {
   const navigate = useNavigate();
@@ -16,8 +17,8 @@ function Checkout() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    if (savedCart.length === 0) {
+    const savedCart = readCart();
+    if (!savedCart || savedCart.length === 0) {
       navigate('/cart');
     }
     setCartItems(savedCart);
@@ -114,9 +115,8 @@ function Checkout() {
 
               const { data: createdOrder } = await api.post('/orders', finalOrderData);
 
-              // Clear cart
-              localStorage.removeItem('cart');
-              window.dispatchEvent(new Event('cartUpdated'));
+              // Clear cart for the current user
+              clearCart();
               alert('Payment Successful! Order Placed.');
               navigate(`/`); // Redirect to home or order details
             } else {

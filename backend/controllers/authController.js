@@ -34,17 +34,17 @@ export const registerUser = async (req, res) => {
       role: role || 'user'
     });
 
-    const token = createToken(user._id);
-
+    // Do NOT issue a token automatically after registration.
+    // Require the user to log in via the login endpoint to obtain a token.
     res.status(201).json({
       success: true,
+      message: 'User registered successfully. Please log in to continue.',
       data: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role
-      },
-      token
+      }
     });
   } catch (err) {
     console.error(err);

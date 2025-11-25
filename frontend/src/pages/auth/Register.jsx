@@ -21,9 +21,8 @@ function Register() {
 
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userInfo', JSON.stringify(data.data));
-      alert(`Account created for ${data.data.name}!`);
+      // Do not auto-login the user after registration. Redirect them to login.
+      alert(data.message || `Account created for ${data.data?.name || name}! Please log in.`);
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed.');

@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, User, Globe, Menu, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { readCart } from '../utils/cart';
 
 function Navbar({ theme, setTheme }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,15 +17,23 @@ function Navbar({ theme, setTheme }) {
   }, [location]);
 
   useEffect(() => {
-    const updateCartCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const count = cart.reduce((acc, item) => acc + Number(item.qty), 0);
+    const updateCartCount = (e) => {
+      // If event provides count in detail, use it for immediate update.
+      if (e && e.detail && typeof e.detail.count === 'number') {
+        setCartCount(e.detail.count);
+        return;
+      }
+
+      const cart = readCart();
+      const count = (cart || []).reduce((acc, item) => acc + Number(item.qty || 0), 0);
       setCartCount(count);
     };
 
+    // Initialize
     updateCartCount();
 
     window.addEventListener('cartUpdated', updateCartCount);
+    // 'storage' events are useful when multiple tabs are open
     window.addEventListener('storage', updateCartCount);
 
     return () => {
@@ -37,7 +46,8 @@ function Navbar({ theme, setTheme }) {
     localStorage.removeItem('userInfo');
     localStorage.removeItem('token');
     setUserInfo(null);
-    setCartCount(0);
+    // trigger cart update so UI switches to guest cart count
+    window.dispatchEvent(new Event('cartUpdated'));
     navigate('/login');
   };
 
@@ -48,10 +58,11 @@ function Navbar({ theme, setTheme }) {
         {/* Left links */}
         <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
           <Link to="/" className="font-bold text-lg mr-4">Famazon</Link>
-          <Link to="/eletronics" className="hover:underline">Electronics</Link>
-          <Link to="/mobile" className="hover:underline">Mobile</Link>
-          <Link to="/homeandkitchen" className="hover:underline">Kitchen & Home</Link>
-          <Link to="/fashion" className="hover:underline">Fashion</Link>
+          {/* <Link to="/about" className="hover:underline">About</Link> */}
+          <Link to="/eletronics" className="hover:font-bold">Electronics</Link>
+          <Link to="/mobile" className="hover:font-bold">Mobile</Link>
+          <Link to="/homeandkitchen" className="hover:font-bold">Kitchen & Home</Link>
+          <Link to="/fashion" className="hover:font-bold">Fashion</Link>
         </div>
 
         {/* Center search bar */}
@@ -68,13 +79,13 @@ function Navbar({ theme, setTheme }) {
 
         {/* Right icons & links */}
         <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300 text-sm">
-          <button className="flex items-center gap-1 hover:underline">
+          <button className="flex items-center gap-1 hover:font-bold">
             <Globe size={18} /> EN
           </button>
-          <Link to="/customer" className="hover:underline hidden lg:inline">Customer Service</Link>
+          <Link to="/customer" className="hover:font-bold hidden lg:inline">Customer Service</Link>
 
           {userInfo && (
-            <Link to="/cart" className="relative hover:underline">
+            <Link to="/cart" className="relative hover:font-bold">
               <ShoppingCart size={24} />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
@@ -132,6 +143,7 @@ function Navbar({ theme, setTheme }) {
           <div className="flex flex-col space-y-3">
             {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
             <Link to="/mobile" onClick={() => setMobileMenuOpen(false)}>Mobile</Link>
+            <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
             <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
             <Link to="/homeandkitchen" onClick={() => setMobileMenuOpen(false)}>Kitchen & Home</Link>
             <Link to="/fashion" onClick={() => setMobileMenuOpen(false)}>Fashion</Link>

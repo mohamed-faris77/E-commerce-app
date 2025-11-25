@@ -49,6 +49,7 @@ function App() {
             <Route path="/fashion" element={<FashionPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registe" element={<Register />} />
+            <Route path="/about" element={<About />} />
 
             {/* Protected Routes - Require Authentication */}
             <Route

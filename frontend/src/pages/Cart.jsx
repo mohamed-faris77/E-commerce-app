@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { readCart, writeCart } from '../utils/cart';
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const savedCart = readCart();
     setCartItems(savedCart);
   }, []);
 
@@ -17,15 +18,13 @@ function Cart() {
       item.product === id ? { ...item, qty: newQty } : item
     );
     setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event('cartUpdated'));
+    writeCart(updatedCart);
   };
 
   const onRemove = (id) => {
     const updatedCart = cartItems.filter(item => item.product !== id);
     setCartItems(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event('cartUpdated'));
+    writeCart(updatedCart);
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
@@ -9,7 +10,9 @@ function Footer() {
           <ul>
             <li>Careers</li>
             <li>Blog</li>
-            <li>About Amazon</li>
+            <li>
+              <Link to="/about" className="hover:underline">About</Link>
+            </li>
             <li>Investor Relations</li>
             <li>Famazon Devices</li>
             <li>Famazon Tours</li>
@@ -37,7 +40,9 @@ function Footer() {
             <li>Returns & Replacements</li>
             <li>Manage Your Content and Devices</li>
             <li>Amazon Assistant</li>
-            <li>Help</li>
+            <li>
+              <Link to="/contact" className="hover:underline">Contact Us</Link>
+            </li>
           </ul>
         </div>
         <div>

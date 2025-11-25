@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import ProductCard from './home/ProductCard';
 import Modal from '../components/Modal';
 import api from '../services/api';
+import { readCart, writeCart } from '../utils/cart';
 
 const getRecentlyWatched = () => {
   const watched = localStorage.getItem('recentlyWatched');
@@ -63,7 +64,7 @@ function ProductDetails() {
       qty,
     };
 
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingCart = readCart();
     const existingItemIndex = existingCart.findIndex(x => x.product === cartItem.product);
 
     if (existingItemIndex !== -1) {
@@ -72,8 +73,7 @@ function ProductDetails() {
       existingCart.push(cartItem);
     }
 
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    window.dispatchEvent(new Event('cartUpdated'));
+    writeCart(existingCart);
     setShowModal(true);
   };
 
@@ -87,7 +87,7 @@ function ProductDetails() {
       qty,
     };
 
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingCart = readCart();
     const existingItemIndex = existingCart.findIndex(x => x.product === cartItem.product);
 
     if (existingItemIndex !== -1) {
@@ -96,8 +96,7 @@ function ProductDetails() {
       existingCart.push(cartItem);
     }
 
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    window.dispatchEvent(new Event('cartUpdated'));
+    writeCart(existingCart);
     // Directly navigate to cart page
     window.location.href = '/cart';
   };
