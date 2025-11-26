@@ -8,7 +8,9 @@ function Footer() {
         <div>
           <h4 className="font-semibold mb-2">Get to Know Us</h4>
           <ul>
-            <li>Careers</li>
+            <li>
+              <Link to="/careers" className="hover:underline">Careers</Link>
+            </li>
             <li>Blog</li>
             <li>
               <Link to="/about" className="hover:underline">About</Link>

@@ -20,6 +20,7 @@ import EletronicsPage from './pages/ElectronicsPage';
 import KitchenHomePage from './pages/KitchenHomePage';
 import FashionPage from './pages/FashionPage';
 import CustomerService from './pages/CustomerService';
+import Careers from './pages/Careers';
 
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registe" element={<Register />} />
             <Route path="/about" element={<About />} />
+            <Route path="/careers" element={<Careers />} />
 
             {/* Protected Routes - Require Authentication */}
             <Route
