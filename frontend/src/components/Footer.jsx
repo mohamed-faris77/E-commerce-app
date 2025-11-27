@@ -41,7 +41,7 @@ function Footer() {
             <li>Shipping Rates & Policies</li>
             <li>Returns & Replacements</li>
             <li>Manage Your Content and Devices</li>
-            <li>Amazon Assistant</li>
+            <li>Famazon Assistant</li>
             <li>
               <Link to="/contact" className="hover:underline">Contact Us</Link>
             </li>

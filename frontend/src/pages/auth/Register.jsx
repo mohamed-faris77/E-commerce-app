@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import Modal from '../../components/Modal';
 
 function Register() {
   const [name, setName] = useState('');
@@ -8,6 +9,7 @@ function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,8 +24,14 @@ function Register() {
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
       // Do not auto-login the user after registration. Redirect them to login.
-      alert(data.message || `Account created for ${data.data?.name || name}! Please log in.`);
-      navigate('/login');
+      setSuccessModal({
+        isOpen: true,
+        title: 'Account Created Successfully',
+        message: `Welcome, ${data.data?.name || name}! Your account has been created. Please log in to continue.`
+      });
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed.');
     }
@@ -85,6 +93,16 @@ function Register() {
           <Link to="/login" className="text-sm text-blue-500 hover:underline">Already have an account? Sign in</Link>
         </div>
       </form>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        title={successModal.title}
+        message={successModal.message}
+        type="success"
+        showActions={false}
+      />
     </div>
   );
 }

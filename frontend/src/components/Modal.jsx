@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, CheckCircle } from 'lucide-react';
 
-function Modal({ isOpen, onClose, title, message, type = 'success' }) {
+function Modal({ isOpen, onClose, title, message, type = 'success', showActions = true }) {
   if (!isOpen) return null;
 
   return (
@@ -33,21 +33,23 @@ function Modal({ isOpen, onClose, title, message, type = 'success' }) {
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="mt-6 flex gap-3 justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Continue Shopping
-          </button>
-          <button
-            onClick={() => window.location.href = '/cart'}
-            className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition-colors font-semibold"
-          >
-            View Cart
-          </button>
-        </div>
+        {/* Action buttons (optional) */}
+        {showActions && (
+          <div className="mt-6 flex gap-3 justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Continue Shopping
+            </button>
+            <button
+              onClick={() => window.location.href = '/cart'}
+              className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition-colors font-semibold"
+            >
+              View Cart
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

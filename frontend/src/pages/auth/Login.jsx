@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { migrateCartOnLogin } from '../../utils/cart';
+import Modal from '../../components/Modal';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '', userName: '' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,13 +21,20 @@ function Login() {
       localStorage.setItem('userInfo', JSON.stringify(data.data));
       // Migrate guest cart to user cart if applicable
       migrateCartOnLogin(data.data.id || data.data._id || data.data.email);
-      alert(`Welcome back, ${data.data.name}!`);
-
-      if (data.data.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      setSuccessModal({
+        isOpen: true,
+        title: 'Login Successful',
+        message: `Welcome back, ${data.data.name}!`,
+        userName: data.data.name,
+        userRole: data.data.role
+      });
+      setTimeout(() => {
+        if (data.data.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      }, 1500);
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.');
     }
@@ -70,6 +79,16 @@ function Login() {
           <Link to="/forgot-password" className="text-sm text-gray-500 hover:underline">Forgot your password?</Link>
         </div>
       </form>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        title={successModal.title}
+        message={successModal.message}
+        type="success"
+        showActions={false}
+      />
     </div>
   );
 }

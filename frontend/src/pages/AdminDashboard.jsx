@@ -78,7 +78,7 @@ function AdminDashboard() {
     try {
       await api.delete(`/products/${productId}`);
       setProducts(products.filter(p => p._id !== productId));
-      setAlertModal({ isOpen: true, title: 'Success', message: 'Product deleted successfully!', type: 'success' });
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Product deleted successfully!', type: 'success', showActions: false });
     } catch (err) {
       setAlertModal({ isOpen: true, title: 'Error', message: 'Error deleting product: ' + err.message, type: 'error' });
     }
@@ -93,7 +93,7 @@ function AdminDashboard() {
         payer: { email_address: 'admin@manual.com' }
       });
       setOrders(orders.map(order => order._id === orderId ? data : order));
-      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Paid', type: 'success' });
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Paid', type: 'success', showActions: false });
     } catch (err) {
       setAlertModal({ isOpen: true, title: 'Error', message: 'Error updating order: ' + (err.response?.data?.message || err.message), type: 'error' });
     }
@@ -103,7 +103,7 @@ function AdminDashboard() {
     try {
       const { data } = await api.put(`/orders/${orderId}/deliver`);
       setOrders(orders.map(order => order._id === orderId ? data : order));
-      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Delivered', type: 'success' });
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Delivered', type: 'success' , showActions: false });
     } catch (err) {
       setAlertModal({ isOpen: true, title: 'Error', message: 'Error updating order: ' + (err.response?.data?.message || err.message), type: 'error' });
     }
@@ -126,11 +126,11 @@ function AdminDashboard() {
       if (editingProduct) {
         const { data } = await api.put(`/products/${editingProduct._id}`, { ...productData, image: formData.imageUrl });
         setProducts(products.map(p => p._id === editingProduct._id ? data : p));
-        setAlertModal({ isOpen: true, title: 'Success', message: 'Product updated successfully!', type: 'success' });
+        setAlertModal({ isOpen: true, title: 'Success', message: 'Product updated successfully!', type: 'success', showActions: false });
       } else {
         const { data } = await api.post('/products', productData);
         setProducts([...products, data]);
-        setAlertModal({ isOpen: true, title: 'Success', message: 'Product created successfully!', type: 'success' });
+        setAlertModal({ isOpen: true, title: 'Success', message: 'Product created successfully!', type: 'success', showActions: false });
       }
       setShowProductModal(false);
       fetchData();
@@ -368,6 +368,7 @@ function AdminDashboard() {
         title={alertModal.title}
         message={alertModal.message}
         type={alertModal.type}
+        showActions={typeof alertModal.showActions === 'boolean' ? alertModal.showActions : true}
       />
     </div>
   );
