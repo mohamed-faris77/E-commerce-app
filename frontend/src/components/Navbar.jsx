@@ -98,6 +98,7 @@ function Navbar({ theme, setTheme }) {
           {userInfo ? (
             <div className="flex items-center gap-3">
               <span className="font-semibold">Hi, {userInfo.name}</span>
+              <Link to="/account" className="text-blue-500 hover:underline">Account</Link>
               {userInfo.role === 'admin' && (
                 <Link to="/admin" className="text-blue-500 hover:underline">Admin</Link>
               )}
@@ -142,6 +143,7 @@ function Navbar({ theme, setTheme }) {
         <div className="md:hidden bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col space-y-3">
             {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
+            {userInfo && <Link to="/account" onClick={() => setMobileMenuOpen(false)}>Account</Link>}
             <Link to="/mobile" onClick={() => setMobileMenuOpen(false)}>Mobile</Link>
             <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
             <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>

@@ -86,3 +86,31 @@ export const getCurrentUser = async (req, res) => {
   if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
   res.json({ success: true, data: req.user });
 };
+
+export const updateCurrentUser = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Not authenticated' });
+
+    const { name, email, password } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (email && email !== user.email) {
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(409).json({ message: 'Email already in use' });
+      user.email = email;
+    }
+
+    if (name) user.name = name;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    const updated = await user.save();
+    res.json({ success: true, data: { id: updated._id, name: updated.name, email: updated.email, role: updated.role } });
+  } catch (err) {
+    console.error('updateCurrentUser error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

@@ -1,5 +1,40 @@
 import Order from '../models/Order.js';
 
+// Cancel an order (user or admin)
+const cancelOrder = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  // only owner or admin can cancel
+  if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Not authorized to cancel this order' });
+  }
+
+  if (order.isDelivered) return res.status(400).json({ message: 'Delivered orders cannot be cancelled' });
+  if (order.isCancelled) return res.status(400).json({ message: 'Order already cancelled' });
+
+  order.isCancelled = true;
+  const updated = await order.save();
+  res.json(updated);
+};
+
+// Return an order (user) - only for delivered orders
+const returnOrder = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+
+  if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Not authorized to return this order' });
+  }
+
+  if (!order.isDelivered) return res.status(400).json({ message: 'Only delivered orders can be returned' });
+  if (order.isReturned) return res.status(400).json({ message: 'Order already returned' });
+
+  order.isReturned = true;
+  const updated = await order.save();
+  res.json(updated);
+};
+
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
@@ -117,6 +152,8 @@ export {
   getOrderById,
   updateOrderToPaid,
   updateOrderToDelivered,
+  cancelOrder,
+  returnOrder,
   getMyOrders,
   getOrders,
 };
