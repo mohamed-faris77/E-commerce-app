@@ -16,6 +16,8 @@ function Navbar({ theme, setTheme }) {
     setUserInfo(user);
   }, [location]);
 
+  const isAdmin = userInfo && userInfo.role === 'admin';
+
   useEffect(() => {
     const updateCartCount = (e) => {
       // If event provides count in detail, use it for immediate update.
@@ -54,113 +56,148 @@ function Navbar({ theme, setTheme }) {
   return (
     <nav className="border-b bg-white dark:bg-gray-900 px-4 py-2 fixed w-full z-50">
       {/* Desktop Navbar */}
-      <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto">
-        {/* Left links */}
-        <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
-          <Link to="/" className="font-bold text-lg mr-4">Famazon</Link>
-          {/* <Link to="/about" className="hover:underline">About</Link> */}
-          <Link to="/eletronics" className="hover:font-bold">Electronics</Link>
-          <Link to="/mobile" className="hover:font-bold">Mobile</Link>
-          <Link to="/homeandkitchen" className="hover:font-bold">Kitchen & Home</Link>
-          <Link to="/fashion" className="hover:font-bold">Fashion</Link>
+      {isAdmin ? (
+        <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto">
+          <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
+            <Link to="/" className="font-bold text-lg mr-4">Famazon</Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/admin" className="text-blue-500 hover:underline">Admin Dashboard</Link>
+            <button onClick={logoutHandler} className="text-red-500 hover:underline"><LogOut size={20} /></button>
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">{theme === 'dark' ? '🌞' : '🌙'}</button>
+          </div>
         </div>
+      ) : (
+        <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto">
+          {/* Left links */}
+          <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
+            <Link to="/" className="font-bold text-lg mr-4">Famazon</Link>
+            {/* <Link to="/about" className="hover:underline">About</Link> */}
+            <Link to="/eletronics" className="hover:font-bold">Electronics</Link>
+            <Link to="/mobile" className="hover:font-bold">Mobile</Link>
+            <Link to="/homeandkitchen" className="hover:font-bold">Kitchen & Home</Link>
+            <Link to="/fashion" className="hover:font-bold">Fashion</Link>
+          </div>
 
-        {/* Center search bar */}
-        <div className="flex flex-grow max-w-xl mx-4">
-          <input
-            type="text"
-            placeholder="Search Famazon"
-            className="flex-grow rounded-l-md border border-gray-300 p-2 focus:outline-none"
-          />
-          <button className="bg-yellow-400 p-2 rounded-r-md hover:bg-yellow-500">
-            <Search size={20} />
-          </button>
+          {/* Center search bar */}
+          <div className="flex flex-grow max-w-xl mx-4">
+            <input
+              type="text"
+              placeholder="Search Famazon"
+              className="flex-grow rounded-l-md border border-gray-300 p-2 focus:outline-none"
+            />
+            <button className="bg-yellow-400 p-2 rounded-r-md hover:bg-yellow-500">
+              <Search size={20} />
+            </button>
+          </div>
+
+          {/* Right icons & links */}
+          <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300 text-sm">
+            <button className="flex items-center gap-1 hover:font-bold">
+              <Globe size={18} /> EN
+            </button>
+            <Link to="/customer" className="hover:font-bold hidden lg:inline">Customer Service</Link>
+
+            {userInfo && (
+              <Link to="/cart" className="relative hover:font-bold">
+                <ShoppingCart size={24} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            {userInfo ? (
+              <div className="flex items-center gap-3">
+                <span className="font-semibold">Hi, {userInfo.name}</span>
+                <Link to="/account" className="text-blue-500 hover:underline">Account</Link>
+                {userInfo.role === 'admin' && (
+                  <Link to="/admin" className="text-blue-500 hover:underline">Admin</Link>
+                )}
+                <button onClick={logoutHandler} className="text-red-500 hover:underline">
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="hover:underline">
+                <User size={24} />
+              </Link>
+            )}
+
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+              {theme === 'dark' ? '🌞' : '🌙'}
+            </button>
+          </div>
         </div>
-
-        {/* Right icons & links */}
-        <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300 text-sm">
-          <button className="flex items-center gap-1 hover:font-bold">
-            <Globe size={18} /> EN
-          </button>
-          <Link to="/customer" className="hover:font-bold hidden lg:inline">Customer Service</Link>
-
-          {userInfo && (
-            <Link to="/cart" className="relative hover:font-bold">
-              <ShoppingCart size={24} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          )}
-
-          {userInfo ? (
-            <div className="flex items-center gap-3">
-              <span className="font-semibold">Hi, {userInfo.name}</span>
-              <Link to="/account" className="text-blue-500 hover:underline">Account</Link>
-              {userInfo.role === 'admin' && (
-                <Link to="/admin" className="text-blue-500 hover:underline">Admin</Link>
-              )}
-              <button onClick={logoutHandler} className="text-red-500 hover:underline">
-                <LogOut size={20} />
-              </button>
-            </div>
-          ) : (
-            <Link to="/login" className="hover:underline">
-              <User size={24} />
-            </Link>
-          )}
-
-          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-            {theme === 'dark' ? '🌞' : '🌙'}
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Mobile Navbar */}
-      <div className="flex md:hidden justify-between items-center">
-        <Link to="/" className="font-bold text-lg">Famazon</Link>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <Menu size={24} />
-          </button>
-          {userInfo && (
-            <Link to="/cart" className="relative">
-              <ShoppingCart size={24} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          )}
+      {isAdmin ? (
+        <div className="flex md:hidden justify-between items-center">
+          <Link to="/" className="font-bold text-lg">Famazon</Link>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              <Menu size={24} />
+            </button>
+            <button onClick={logoutHandler} className="ml-2 text-red-500"><LogOut size={20} /></button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex md:hidden justify-between items-center">
+          <Link to="/" className="font-bold text-lg">Famazon</Link>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              <Menu size={24} />
+            </button>
+            {userInfo && (
+              <Link to="/cart" className="relative">
+                <ShoppingCart size={24} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-yellow-400 text-black rounded-full text-xs px-1">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col space-y-3">
-            {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
-            {userInfo && <Link to="/account" onClick={() => setMobileMenuOpen(false)}>Account</Link>}
-            <Link to="/mobile" onClick={() => setMobileMenuOpen(false)}>Mobile</Link>
-            <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
-            <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
-            <Link to="/homeandkitchen" onClick={() => setMobileMenuOpen(false)}>Kitchen & Home</Link>
-            <Link to="/fashion" onClick={() => setMobileMenuOpen(false)}>Fashion</Link>
-            <Link to="/customer" onClick={() => setMobileMenuOpen(false)}>Customer Service</Link>
-            {userInfo && userInfo.role === 'admin' && (
-              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-blue-500">Admin Dashboard</Link>
-            )}
-            {userInfo ? (
-              <button onClick={() => { logoutHandler(); setMobileMenuOpen(false); }} className="text-left text-red-500">Logout</button>
+            {isAdmin ? (
+              // Admin-only mobile menu
+              <>
+                {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-blue-500">Admin Dashboard</Link>
+                <button onClick={() => { logoutHandler(); setMobileMenuOpen(false); }} className="text-left text-red-500">Logout</button>
+                <button onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setMobileMenuOpen(false); }} className="text-left">Toggle Theme {theme === 'dark' ? '🌞' : '🌙'}</button>
+              </>
             ) : (
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+              // Regular user mobile menu
+              <>
+                {userInfo && <span className="font-bold">Hi, {userInfo.name}</span>}
+                {userInfo && <Link to="/account" onClick={() => setMobileMenuOpen(false)}>Account</Link>}
+                <Link to="/mobile" onClick={() => setMobileMenuOpen(false)}>Mobile</Link>
+                <Link to="/eletronics" onClick={() => setMobileMenuOpen(false)}>Electronics</Link>
+                <Link to="/homeandkitchen" onClick={() => setMobileMenuOpen(false)}>Kitchen & Home</Link>
+                <Link to="/fashion" onClick={() => setMobileMenuOpen(false)}>Fashion</Link>
+                <Link to="/customer" onClick={() => setMobileMenuOpen(false)}>Customer Service</Link>
+                {userInfo && userInfo.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-blue-500">Admin Dashboard</Link>
+                )}
+                {userInfo ? (
+                  <button onClick={() => { logoutHandler(); setMobileMenuOpen(false); }} className="text-left text-red-500">Logout</button>
+                ) : (
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                )}
+                <button onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setMobileMenuOpen(false); }} className="text-left">Toggle Theme {theme === 'dark' ? '🌞' : '🌙'}</button>
+              </>
             )}
-            <button onClick={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setMobileMenuOpen(false); }} className="text-left">
-              Toggle Theme {theme === 'dark' ? '🌞' : '🌙'}
-            </button>
           </div>
         </div>
       )}
