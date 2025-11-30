@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import ProductCard from './home/ProductCard';
 import Modal from '../components/Modal';
 import api from '../services/api';
 import { readCart, writeCart } from '../utils/cart';
+import { Star, ShoppingCart, CreditCard, ArrowLeft, Minus, Plus, Truck, ShieldCheck } from 'lucide-react';
 
 const getRecentlyWatched = () => {
   const watched = localStorage.getItem('recentlyWatched');
@@ -12,6 +13,7 @@ const getRecentlyWatched = () => {
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,12 +37,12 @@ function ProductDetails() {
     fetchProduct();
   }, [id]);
 
-  // Auto-slide images every 3 seconds
+  // Auto-slide images every 5 seconds (slower for better UX)
   useEffect(() => {
     if (product && product.images.length > 1) {
       const interval = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-      }, 3000);
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [product]);
@@ -74,6 +76,11 @@ function ProductDetails() {
     }
 
     writeCart(existingCart);
+    // Update local stock display after adding to cart
+    setProduct(prev => ({
+      ...prev,
+      stock: Math.max(0, prev.stock - qty),
+    }));
     setShowModal(true);
   };
 
@@ -97,16 +104,38 @@ function ProductDetails() {
     }
 
     writeCart(existingCart);
-    // Directly navigate to cart page
-    window.location.href = '/cart';
+    // Update local stock before navigating to cart
+    setProduct(prev => ({
+      ...prev,
+      stock: Math.max(0, prev.stock - qty),
+    }));
+    navigate('/cart');
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const handleQtyChange = (delta) => {
+    setQty(prev => Math.max(1, Math.min(product.stock, prev + delta)));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+
   if (!product) return <div>Product not found</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12">
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -114,100 +143,135 @@ function ProductDetails() {
         message={`${product.name} has been added to your cart.`}
         type="success"
       />
-      <Link to="/eletronics" className="text-sm underline mb-4 inline-block">← Back to Products</Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Images Carousel */}
-        <div className="relative">
-          <img
-            src={product.images[currentImageIndex]?.url}
-            alt={product.name}
-            className="w-full h-96 object-cover rounded-lg shadow"
-          />
-          <div className="flex justify-center mt-4 space-x-2">
-            {product.images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-yellow-400' : 'bg-gray-400'}`}
-              />
-            ))}
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4">
+        <button onClick={() => navigate(-1)} className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
+          <ArrowLeft size={20} className="mr-2" /> Back
+        </button>
 
-        {/* Product Details */}
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-yellow-500 text-lg">⭐ {product.ratings} ({product.numOfReviews} reviews)</p>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300">{product.description}</p>
-
-          <div className="flex items-center gap-4">
-            <label htmlFor="qty" className="font-semibold">Quantity:</label>
-            <input
-              id="qty"
-              type="number"
-              min={1}
-              max={product.stock}
-              value={qty}
-              onChange={(e) => setQty(Math.max(1, Math.min(product.stock, Number(e.target.value))))}
-              className="w-20 border rounded p-1 text-center dark:bg-gray-700"
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              onClick={addToCart}
-              disabled={product.stock === 0}
-              className="bg-yellow-400 text-black py-2 px-6 rounded font-semibold hover:bg-yellow-500 disabled:opacity-50"
-            >
-              {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
-            </button>
-            <button
-              onClick={buyNow}
-              disabled={product.stock === 0}
-              className="bg-orange-500 text-white py-2 px-6 rounded font-semibold hover:bg-orange-600 disabled:opacity-50"
-            >
-              Buy Now
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Reviews Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Customer Reviews</h2>
-        <div className="space-y-4">
-          {product.reviews.length === 0 && <p>No reviews yet</p>}
-          {product.reviews.map(review => (
-            <div key={review._id} className="bg-white dark:bg-gray-800 p-4 rounded shadow">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold">{review.name}</span>
-                <span className="text-yellow-500">⭐ {review.rating}</span>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            {/* Product Images Section */}
+            <div className="p-8 bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center relative">
+              <div className="relative w-full max-w-md aspect-square mb-4">
+                <img
+                  src={product.images[currentImageIndex]?.url}
+                  alt={product.name}
+                  className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal rounded-lg"
+                />
               </div>
-              <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+              <div className="flex justify-center gap-3 mt-4">
+                {product.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-yellow-400 w-6' : 'bg-gray-400 hover:bg-gray-500'}`}
+                  />
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Recently Watched Products */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Recently Watched</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {recentlyWatched.map(p => (
-            <Link key={p._id} to={`/product/${p._id}`}>
-              <ProductCard
-                image={p.images[0]?.url}
-                title={p.name}
-                price={p.price}
-                rating={p.ratings}
-              />
-            </Link>
-          ))}
+            {/* Product Details Section */}
+            <div className="p-8 lg:p-12 flex flex-col">
+              <div className="mb-2">
+                <span className="text-sm font-semibold text-yellow-500 uppercase tracking-wider">{product.category}</span>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-1 mb-2">{product.name}</h1>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={18} fill={i < Math.floor(product.ratings) ? "currentColor" : "none"} className={i < Math.floor(product.ratings) ? "" : "text-gray-300 dark:text-gray-600"} />
+                    ))}
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">({product.numOfReviews} reviews)</span>
+                </div>
+              </div>
+
+              <div className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                ${product.price.toFixed(2)}
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                {product.description}
+              </p>
+
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-6 mb-8">
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Quantity</span>
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                  <button
+                    onClick={() => handleQtyChange(-1)}
+                    disabled={qty <= 1}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <span className="w-12 text-center font-semibold">{qty}</span>
+                  <button
+                    onClick={() => handleQtyChange(1)}
+                    disabled={qty >= product.stock}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+                <span className={`text-sm ${product.stock > 0 ? 'text-green-500' : 'text-red-500'} font-medium`}>
+                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <button
+                  onClick={addToCart}
+                  disabled={product.stock === 0}
+                  className="flex-1 bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ShoppingCart size={20} />
+                  Add to Cart
+                </button>
+                <button
+                  onClick={buyNow}
+                  disabled={product.stock === 0}
+                  className="flex-1 bg-yellow-400 text-black py-4 rounded-xl font-bold hover:bg-yellow-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-400/30"
+                >
+                  <CreditCard size={20} />
+                  Buy Now
+                </button>
+              </div>
+
+              {/* Features / Trust Badges */}
+              <div className="grid grid-cols-2 gap-4 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <Truck className="text-yellow-500" size={24} />
+                  <span className="text-sm">Free Delivery over $500</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <ShieldCheck className="text-green-500" size={24} />
+                  <span className="text-sm">2 Year Warranty</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Recently Watched Products */}
+        {recentlyWatched.length > 0 && (
+          <div className="mt-16 mb-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Recently Viewed</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {recentlyWatched.map(p => (
+                <Link key={p._id} to={`/product/${p._id}`} className="group">
+                  <ProductCard
+                    image={p.images[0]?.url}
+                    title={p.name}
+                    price={p.price}
+                    rating={p.ratings}
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

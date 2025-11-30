@@ -1,198 +1,278 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import ProductCard from './home/ProductCard'; // Assuming ProductCard is in pages/home/ – adjust if needed
+import { Link, useSearchParams } from 'react-router-dom';
+import ProductCard from './home/ProductCard';
+import api from '../services/api';
+import { Filter, X } from 'lucide-react';
 
-// Sample product data (replace with API fetch based on :id)
-const sampleProduct = {
-  id: '1',
-  title: 'JBL T460BT Black Headphones',
-  price: 125.0,
-  oldPrice: 250.0,
-  rating: 4.7,
-  brand: 'JBL',
-  description: 'Wireless on-ear headphones with extra bass, 11 hours playtime, noise cancellation, and comfortable fit.',
-  specifications: [
-    'Battery Life: 11 hours',
-    'Connectivity: Bluetooth 5.0',
-    'Weight: 185g',
-    'Color: Black',
-  ],
-  images: [
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1484704849700-f032a568e944?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1583394838336-acd977736f90?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-  ],
-  reviews: [
-    { id: 1, user: 'John D.', rating: 5, comment: 'Amazing sound quality and battery life!' },
-    { id: 2, user: 'Sarah K.', rating: 4, comment: 'Comfortable for long sessions, but a bit bulky.' },
-    { id: 3, user: 'Mike R.', rating: 5, comment: 'Noise cancellation is top-notch. Highly recommend!' },
-  ],
-};
+function Products() {
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState({
+    category: '',
+    brand: '',
+    priceRange: '',
+    rating: '',
+  });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-// Sample related products
-const relatedProducts = [
-  { id: 'r1', title: 'Sony WH-1000XM5 Headphones', price: 349, rating: 4.9, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80' },
-  { id: 'r2', title: 'Bose QuietComfort Earbuds', price: 279, rating: 4.7, image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80' },
-  { id: 'r3', title: 'Apple AirPods Pro', price: 249, rating: 4.8, image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80' },
-];
-
-// Sample recently watched products (from localStorage)
-const getRecentlyWatched = () => {
-  const watched = localStorage.getItem('recentlyWatched');
-  return watched ? JSON.parse(watched) : [];
-};
-
-function ProductDetails() {
-  const { id } = useParams();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [qty, setQty] = useState(1);
-  const [recentlyWatched, setRecentlyWatched] = useState(getRecentlyWatched());
-
-  // Auto-slide images every 3 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % sampleProduct.images.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    const fetchProducts = async () => {
+      try {
+        const searchQuery = searchParams.get('search') || '';
+        setSearchTerm(searchQuery);
 
-  // Add to recently watched
+        const params = {};
+        if (searchQuery) {
+          params.keyword = searchQuery;
+        }
+
+        const { data } = await api.get('/products', { params });
+        const allProducts = data.products;
+        setProducts(allProducts);
+        setFilteredProducts(allProducts);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [searchParams]);
+
+  // Filter logic
   useEffect(() => {
-    const updatedWatched = [sampleProduct, ...recentlyWatched.filter(p => p.id !== sampleProduct.id)].slice(0, 5);
-    setRecentlyWatched(updatedWatched);
-    localStorage.setItem('recentlyWatched', JSON.stringify(updatedWatched));
-  }, [id]);
+    let filtered = products;
 
-  const addToCart = () => {
-    alert(`Added ${qty} x "${sampleProduct.title}" to cart. (Demo - integrate with cart state)`);
+    if (filters.category) {
+      filtered = filtered.filter(product => product.category === filters.category);
+    }
+
+    if (filters.brand) {
+      filtered = filtered.filter(product => product.brand === filters.brand);
+    }
+
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split('-').map(Number);
+      filtered = filtered.filter(product => product.price >= min && product.price <= max);
+    }
+
+    if (filters.rating) {
+      filtered = filtered.filter(product => product.ratings >= Number(filters.rating));
+    }
+
+    setFilteredProducts(filtered);
+  }, [filters, products]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const buyNow = () => {
-    alert(`Proceeding to buy "${sampleProduct.title}". (Demo - redirect to checkout)`);
+  const clearFilters = () => {
+    setFilters({ category: '', brand: '', priceRange: '', rating: '' });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+
+  const categories = ["Electronics", "Fashion", "Kitchen & Home", "Mobile"];
+  const allBrands = [
+    "Apple", "Samsung", "Sony", "Dell", "Google", "HP", "Bose", "Amazon", "Lenovo", "JBL",
+    "Nike", "Adidas", "Levi's", "Zara", "H&M", "Gucci", "Puma",
+    "Instant Pot", "Ninja", "KitchenAid", "Dyson"
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">
-      <Link to="/products" className="text-sm underline mb-4 inline-block">← Back to Products</Link>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Images Carousel */}
-        <div className="relative">
-          <img
-            src={sampleProduct.images[currentImageIndex]}
-            alt={sampleProduct.title}
-            className="w-full h-96 object-cover rounded-lg shadow"
-          />
-          <div className="flex justify-center mt-4 space-x-2">
-            {sampleProduct.images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-yellow-400' : 'bg-gray-400'}`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Product Details */}
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold">{sampleProduct.title}</h1>
-          <p className="text-yellow-500 text-lg">⭐ {sampleProduct.rating} ({sampleProduct.reviews.length} reviews)</p>
-          <div className="flex items-center gap-3">
-            {sampleProduct.oldPrice && <span className="line-through text-gray-500">${sampleProduct.oldPrice.toFixed(2)}</span>}
-            <span className="text-2xl font-bold">${sampleProduct.price.toFixed(2)}</span>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300">{sampleProduct.description}</p>
-
-          <div>
-            <h3 className="font-semibold mb-2">Specifications:</h3>
-            <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-300">
-              {sampleProduct.specifications.map((spec, index) => (
-                <li key={index}>{spec}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label htmlFor="qty" className="font-semibold">Quantity:</label>
-            <input
-              id="qty"
-              type="number"
-              min={1}
-              value={qty}
-              onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
-              className="w-20 border rounded p-1 text-center dark:bg-gray-700"
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              onClick={addToCart}
-              className="bg-yellow-400 text-black py-2 px-6 rounded font-semibold hover:bg-yellow-500"
-            >
-              Add to Cart
-            </button>
-            <button
-              onClick={buyNow}
-              className="bg-orange-500 text-white py-2 px-6 rounded font-semibold hover:bg-orange-600"
-            >
-              Buy Now
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
+      {/* Hero Section */}
+      <div className="relative bg-purple-900 text-white py-16 mb-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900 to-indigo-800 opacity-90"></div>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1472851294608-415522f97817?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center mix-blend-overlay opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+            {searchTerm ? `Search Results for "${searchTerm}"` : 'All Products'}
+          </h1>
+          <p className="text-lg md:text-xl text-purple-100 max-w-2xl mx-auto">
+            {searchTerm ? 'Showing products matching your search' : 'Browse our extensive collection of premium products across all categories.'}
+          </p>
         </div>
       </div>
 
-      {/* Reviews Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Customer Reviews</h2>
-        <div className="space-y-4">
-          {sampleProduct.reviews.map(review => (
-            <div key={review.id} className="bg-white dark:bg-gray-800 p-4 rounded shadow">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold">{review.user}</span>
-                <span className="text-yellow-500">⭐ {review.rating}</span>
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        {/* Mobile Filter Toggle */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm w-full justify-center text-gray-700 dark:text-gray-200"
+          >
+            <Filter size={20} />
+            {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className={`lg:w-64 flex-shrink-0 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm sticky top-24">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Filters</h2>
+                {(filters.category || filters.brand || filters.priceRange || filters.rating) && (
+                  <button onClick={clearFilters} className="text-xs text-purple-600 hover:text-purple-800 dark:text-purple-400 font-medium">
+                    Clear All
+                  </button>
+                )}
               </div>
-              <p className="text-gray-600 dark:text-gray-300">{review.comment}</p>
+
+              {/* Category Filter */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Category</h3>
+                <div className="space-y-2">
+                  {categories.map(cat => (
+                    <label key={cat} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={filters.category === cat}
+                        onChange={() => handleFilterChange('category', cat)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                      />
+                      <span className={`text-sm ${filters.category === cat ? 'text-purple-600 font-medium' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                        {cat}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand Filter */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Brand</h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  {allBrands.map(brand => (
+                    <label key={brand} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="brand"
+                        checked={filters.brand === brand}
+                        onChange={() => handleFilterChange('brand', brand)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                      />
+                      <span className={`text-sm ${filters.brand === brand ? 'text-purple-600 font-medium' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                        {brand}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Filter */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Price Range</h3>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Under $50', value: '0-50' },
+                    { label: '$50 - $150', value: '50-150' },
+                    { label: '$150 - $500', value: '150-500' },
+                    { label: '$500 - $1000', value: '500-1000' },
+                    { label: 'Over $1000', value: '1000-50000' },
+                  ].map(range => (
+                    <label key={range.value} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="price"
+                        checked={filters.priceRange === range.value}
+                        onChange={() => handleFilterChange('priceRange', range.value)}
+                        className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                      />
+                      <span className={`text-sm ${filters.priceRange === range.value ? 'text-purple-600 font-medium' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                        {range.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating Filter */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Min Rating</h3>
+                <div className="space-y-2">
+                  {[4, 4.5, 4.8].map(rating => (
+                    <label key={rating} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="rating"
+                        checked={filters.rating === String(rating)}
+                        onChange={() => handleFilterChange('rating', String(rating))}
+                        className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                      />
+                      <span className={`text-sm ${filters.rating === String(rating) ? 'text-purple-600 font-medium' : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'}`}>
+                        {rating}+ Stars
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Recently Watched Products */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Recently Watched</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {recentlyWatched.map(product => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <ProductCard 
-                image={product.images ? product.images[0] : product.image} 
-                title={product.title} 
-                price={product.price} 
-                rating={product.rating} 
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
+          {/* Product Grid */}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-gray-600 dark:text-gray-400">
+                Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredProducts.length}</span> results
+              </p>
+            </div>
 
-      {/* Related Products */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Related Products</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {relatedProducts.map(product => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <ProductCard 
-                image={product.image} 
-                title={product.title} 
-                price={product.price} 
-                rating={product.rating} 
-              />
-            </Link>
-          ))}
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                <div className="text-gray-400 mb-4">
+                  <Filter size={48} className="mx-auto opacity-50" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your filters to find what you're looking for.</p>
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map(product => (
+                  <Link key={product._id} to={`/product/${product._id}`} className="group">
+                    <ProductCard
+                      image={product.images[0]?.url}
+                      title={product.name}
+                      price={product.price}
+                      rating={product.ratings}
+                    />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export default ProductDetails;
+export default Products;

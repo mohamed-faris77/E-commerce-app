@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { readCart, clearCart } from '../utils/cart';
+import Modal from '../components/Modal';
 
 function Checkout() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('Razorpay');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'success' });
 
   useEffect(() => {
     const savedCart = readCart();
@@ -59,89 +61,123 @@ function Checkout() {
     }
 
     try {
-      const res = await loadRazorpayScript();
+      if (paymentMethod === 'COD') {
+        // Handle Cash on Delivery
+        const orderData = {
+          orderItems: cartItems,
+          shippingAddress,
+          paymentMethod: 'COD',
+          itemsPrice: subtotal,
+          taxPrice,
+          shippingPrice,
+          totalPrice,
+          isPaid: false, // COD is not paid initially
+        };
 
-      if (!res) {
-        setError('Razorpay SDK failed to load. Are you online?');
-        setLoading(false);
-        return;
-      }
+        await api.post('/orders', orderData);
+        clearCart();
+        setModal({
+          isOpen: true,
+          title: 'Order Placed!',
+          message: 'Your order has been placed successfully via Cash on Delivery.',
+          type: 'success',
+          onConfirm: () => navigate('/'),
+          confirmText: 'Go to Home',
+          showActions: true
+        });
+      } else {
+        // Handle Razorpay
+        const res = await loadRazorpayScript();
 
-      // 1. Create Order on Backend
-      const { data: orderData } = await api.post('/payment/create-order', {
-        amount: Number(totalPrice),
-      });
+        if (!res) {
+          setError('Razorpay SDK failed to load. Are you online?');
+          setLoading(false);
+          return;
+        }
 
-      const { data: keyData } = await api.get('/payment/get-key');
+        // 1. Create Order on Backend
+        const { data: orderData } = await api.post('/payment/create-order', {
+          amount: Number(totalPrice),
+        });
 
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const { data: keyData } = await api.get('/payment/get-key');
 
-      const options = {
-        key: keyData.key,
-        amount: orderData.amount,
-        currency: "INR",
-        name: "Famazon",
-        description: "Order Payment",
-        image: "https://example.com/logo.png", // You can add your logo here
-        order_id: orderData.id,
-        handler: async function (response) {
-          try {
-            // 2. Verify Payment
-            const verifyRes = await api.post('/payment/verify-payment', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
-            if (verifyRes.data.success) {
-              // 3. Create Order in Database
-              const finalOrderData = {
-                orderItems: cartItems,
-                shippingAddress,
-                paymentMethod: 'Razorpay',
-                paymentResult: {
-                  id: response.razorpay_payment_id,
-                  status: 'paid',
-                  update_time: new Date().toISOString(),
-                  email_address: userInfo.email,
-                },
-                itemsPrice: subtotal,
-                taxPrice,
-                shippingPrice,
-                totalPrice,
-                isPaid: true,
-                paidAt: new Date().toISOString(),
-              };
+        const options = {
+          key: keyData.key,
+          amount: orderData.amount,
+          currency: "INR",
+          name: "Famazon",
+          description: "Order Payment",
+          image: "https://example.com/logo.png", // You can add your logo here
+          order_id: orderData.id,
+          handler: async function (response) {
+            try {
+              // 2. Verify Payment
+              const verifyRes = await api.post('/payment/verify-payment', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              });
 
-              const { data: createdOrder } = await api.post('/orders', finalOrderData);
+              if (verifyRes.data.success) {
+                // 3. Create Order in Database
+                const finalOrderData = {
+                  orderItems: cartItems,
+                  shippingAddress,
+                  paymentMethod: 'Razorpay',
+                  paymentResult: {
+                    id: response.razorpay_payment_id,
+                    status: 'paid',
+                    update_time: new Date().toISOString(),
+                    email_address: userInfo.email,
+                  },
+                  itemsPrice: subtotal,
+                  taxPrice,
+                  shippingPrice,
+                  totalPrice,
+                  isPaid: true,
+                  paidAt: new Date().toISOString(),
+                };
 
-              // Clear cart for the current user
-              clearCart();
-              alert('Payment Successful! Order Placed.');
-              navigate(`/`); // Redirect to home or order details
-            } else {
-              alert("Payment verification failed");
+                await api.post('/orders', finalOrderData);
+
+                // Clear cart for the current user
+                clearCart();
+                setModal({
+                  isOpen: true,
+                  title: 'Payment Successful!',
+                  message: 'Your order has been placed successfully.',
+                  type: 'success',
+                  onConfirm: () => navigate('/'),
+                  confirmText: 'Go to Home',
+                  showActions: true
+                });
+              } else {
+                setError("Payment verification failed");
+              }
+            } catch (err) {
+              console.error(err);
+              setError("Payment verification failed on server");
             }
-          } catch (err) {
-            console.error(err);
-            alert("Payment verification failed on server");
-          }
-        },
-        prefill: {
-          name: userInfo.name,
-          email: userInfo.email,
-          contact: "9999999999", // You might want to get this from user profile
-        },
-        notes: {
-          address: shippingAddress.address,
-        },
-        theme: {
-          color: "#FACC15", // Yellow-400
-        },
-      };
+          },
+          prefill: {
+            name: userInfo.name,
+            email: userInfo.email,
+            contact: "9999999999", // You might want to get this from user profile
+          },
+          notes: {
+            address: shippingAddress.address,
+          },
+          theme: {
+            color: "#FACC15", // Yellow-400
+          },
+        };
 
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+      }
       setLoading(false);
 
     } catch (err) {
@@ -201,15 +237,27 @@ function Checkout() {
           {/* Payment Method */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow">
             <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2">
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <input
                   type="radio"
                   value="Razorpay"
                   checked={paymentMethod === 'Razorpay'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-4 h-4 text-yellow-500 focus:ring-yellow-500"
                 />
-                Razorpay (Credit/Debit/UPI)
+                <span className="font-medium">Razorpay (Credit/Debit/UPI)</span>
+              </label>
+
+              <label className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <input
+                  type="radio"
+                  value="COD"
+                  checked={paymentMethod === 'COD'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-4 h-4 text-yellow-500 focus:ring-yellow-500"
+                />
+                <span className="font-medium">Cash on Delivery (COD)</span>
               </label>
             </div>
           </div>
@@ -248,12 +296,23 @@ function Checkout() {
           <button
             onClick={placeOrderHandler}
             disabled={loading || !shippingAddress.address}
-            className="w-full bg-yellow-400 text-black py-3 rounded font-semibold hover:bg-yellow-500 disabled:opacity-50"
+            className="w-full bg-yellow-400 text-black py-3 rounded font-semibold hover:bg-yellow-500 disabled:opacity-50 transition-colors"
           >
-            {loading ? 'Processing...' : 'Pay & Place Order'}
+            {loading ? 'Processing...' : paymentMethod === 'COD' ? 'Place Order (COD)' : 'Pay & Place Order'}
           </button>
         </div>
       </div>
+
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm}
+        confirmText={modal.confirmText}
+        showActions={modal.showActions}
+      />
     </div>
   );
 }

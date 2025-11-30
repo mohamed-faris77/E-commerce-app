@@ -103,7 +103,7 @@ function AdminDashboard() {
     try {
       const { data } = await api.put(`/orders/${orderId}/deliver`);
       setOrders(orders.map(order => order._id === orderId ? data : order));
-      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Delivered', type: 'success' , showActions: false });
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Order marked as Delivered', type: 'success', showActions: false });
     } catch (err) {
       setAlertModal({ isOpen: true, title: 'Error', message: 'Error updating order: ' + (err.response?.data?.message || err.message), type: 'error' });
     }
@@ -229,6 +229,7 @@ function AdminDashboard() {
                 <th className="p-4">User</th>
                 <th className="p-4">Date</th>
                 <th className="p-4">Total</th>
+                <th className="p-4">Status</th>
                 <th className="p-4">Paid</th>
                 <th className="p-4">Delivered</th>
               </tr>
@@ -240,6 +241,15 @@ function AdminDashboard() {
                   <td className="p-4">{order.user ? order.user.name : 'Unknown'}</td>
                   <td className="p-4">{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td className="p-4">${order.totalPrice.toFixed(2)}</td>
+                  <td className="p-4">
+                    {order.isCancelled ? (
+                      <span className="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-red-200 dark:text-red-900">Cancelled</span>
+                    ) : order.isReturned ? (
+                      <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-orange-200 dark:text-orange-900">Returned</span>
+                    ) : (
+                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">Active</span>
+                    )}
+                  </td>
                   <td className="p-4">
                     {order.isPaid ? (
                       <span className="text-green-500 font-semibold">✓ Paid</span>

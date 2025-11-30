@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 
 // Cancel an order (user or admin)
 const cancelOrder = async (req, res) => {
@@ -68,6 +69,15 @@ const addOrderItems = async (req, res) => {
     });
 
     const createdOrder = await order.save();
+
+    // Decrease stock for each ordered item
+    for (const item of orderItems) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock = product.stock - item.qty;
+        await product.save();
+      }
+    }
 
     res.status(201).json(createdOrder);
   }
