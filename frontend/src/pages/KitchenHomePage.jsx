@@ -87,7 +87,7 @@ function KitchenHomePage() {
       {/* Hero Section */}
       <div className="relative bg-orange-900 text-white py-16 mb-8 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-900 to-amber-800 opacity-90"></div>
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745a30bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center mix-blend-overlay opacity-20"></div>
+        <div className="absolute inset-0 bg-[url('https://i.pinimg.com/1200x/c3/c2/50/c3c25013582d9c7ee838e3374e1ffb57.jpg')] bg-cover bg-center mix-blend-overlay opacity-20"></div>
         <div className="relative max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Kitchen & Home</h1>
           <p className="text-lg md:text-xl text-orange-100 max-w-2xl mx-auto">

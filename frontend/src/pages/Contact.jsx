@@ -103,9 +103,9 @@ const Contact = () => {
             <div className="pt-4">
               <h4 className="font-semibold mb-2">Follow us</h4>
               <div className="flex items-center gap-3">
-                <a href="#" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Twitter</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Facebook</a>
-                <a href="#" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Instagram</a>
+                <a href="https://x.com/Mohamedfaris07" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Twitter</a>
+                <a href="https://www.facebook.com/people/Mohamed-Faris/pfbid02tPadLEzbxMGvTr357PU1oSsdMXBDzbmNCoQRiGfWPhxQhRryx24eKPgy6JGJ8dPGl/?rdid=95lbKisgBCzisMC0&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F15tGrynVye%2F" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Facebook</a>
+                <a href="https://www.instagram.com/faaaris.k/profilecard/" className="text-gray-600 hover:text-gray-900 dark:hover:text-white">Instagram</a>
               </div>
             </div>
           </div>
@@ -121,12 +121,12 @@ const Contact = () => {
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-1">
                   <label className="block text-sm font-medium mb-1">Your name</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded border p-2 dark:bg-gray-700" placeholder="Jane Doe" />
+                  <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded border p-2 dark:bg-gray-700" placeholder="Mohamed Faris" />
                 </div>
 
                 <div className="md:col-span-1">
                   <label className="block text-sm font-medium mb-1">Email</label>
-                  <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded border p-2 dark:bg-gray-700" placeholder="you@example.com" />
+                  <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded border p-2 dark:bg-gray-700" placeholder="faris@example.com" />
                 </div>
 
                 <div className="md:col-span-2">

@@ -75,9 +75,9 @@ function Login() {
           <Link to="/registe" className="text-sm text-blue-500 hover:underline">New to Famazon? Create an account</Link>
         </div>
 
-        <div className="text-center mt-4">
+        {/* <div className="text-center mt-4">
           <Link to="/forgot-password" className="text-sm text-gray-500 hover:underline">Forgot your password?</Link>
-        </div>
+        </div> */}
       </form>
 
       {/* Success Modal */}

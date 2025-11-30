@@ -39,7 +39,7 @@ function CustomerService() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 min-h-screen">
       <h1 className="text-3xl font-semibold mb-6">Customer Service</h1>
 
       {/* Search Bar */}

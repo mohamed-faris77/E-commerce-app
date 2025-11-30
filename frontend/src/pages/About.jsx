@@ -46,19 +46,19 @@ const About = () => {
           <h2 className="text-2xl font-bold mb-4">Our mission</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-3xl">Our mission is to be the Earth's most customer-centric company where customers can find and discover anything they might want to buy online. We aim to offer our customers the lowest possible prices, the best available selection, and the utmost convenience.</p>
         </section>
-
+{/* 
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Meet Our Team</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
                 <div className="w-20 h-20 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full mb-4 flex items-center justify-center text-xl font-bold">JD</div>
-                <h4 className="font-semibold">Jane Doe</h4>
+                <h4 className="font-semibold">Faris</h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Product Lead</p>
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-4">Timeline</h2>
