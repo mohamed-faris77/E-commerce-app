@@ -8,6 +8,7 @@ function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [contacts, setContacts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -33,9 +34,11 @@ function AdminDashboard() {
       const productsRes = await api.get('/products');
       const ordersRes = await api.get('/orders');
       const contactsRes = await api.get('/contact');
+      const usersRes = await api.get('/auth/users');
       setProducts(productsRes.data.products);
       setOrders(ordersRes.data);
       setContacts(contactsRes.data.contacts || []);
+      setUsers(usersRes.data.data || []);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -151,12 +154,13 @@ function AdminDashboard() {
         <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'overview' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
         <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'products' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('products')}>Products</button>
         <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'orders' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('orders')}>Orders</button>
+        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'users' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
         <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'contacts' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('contacts')}>Contact Messages</button>
       </div>
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
             <h3 className="text-xl font-semibold mb-2">Total Sales</h3>
             <p className="text-3xl font-bold text-green-500">${totalSales.toFixed(2)}</p>
@@ -168,6 +172,10 @@ function AdminDashboard() {
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
             <h3 className="text-xl font-semibold mb-2">Total Products</h3>
             <p className="text-3xl font-bold text-purple-500">{products.length}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
+            <h3 className="text-xl font-semibold mb-2">Total Users</h3>
+            <p className="text-3xl font-bold text-indigo-500">{users.length}</p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
             <h3 className="text-xl font-semibold mb-2">Contact Messages</h3>
@@ -253,6 +261,8 @@ function AdminDashboard() {
                   <td className="p-4">
                     {order.isPaid ? (
                       <span className="text-green-500 font-semibold">✓ Paid</span>
+                    ) : order.isCancelled ? (
+                      <button disabled className="text-gray-400 font-semibold border border-gray-300 px-2 py-1 rounded text-xs cursor-not-allowed" title="Cannot mark cancelled order as paid">Mark Paid</button>
                     ) : (
                       <button onClick={() => handleMarkAsPaid(order._id)} className="text-red-500 hover:text-red-700 font-semibold border border-red-500 px-2 py-1 rounded text-xs hover:bg-red-50">Mark Paid</button>
                     )}
@@ -260,6 +270,10 @@ function AdminDashboard() {
                   <td className="p-4">
                     {order.isDelivered ? (
                       <span className="text-green-500 font-semibold">✓ Delivered</span>
+                    ) : order.isCancelled ? (
+                      <button disabled className="text-gray-400 font-semibold border border-gray-300 px-2 py-1 rounded text-xs cursor-not-allowed" title="Cannot mark cancelled order as delivered">Mark Delivered</button>
+                    ) : !order.isPaid ? (
+                      <button disabled className="text-gray-400 font-semibold border border-gray-300 px-2 py-1 rounded text-xs cursor-not-allowed" title="Order must be paid first">Mark Delivered</button>
                     ) : (
                       <button onClick={() => handleMarkAsDelivered(order._id)} className="text-orange-500 hover:text-orange-700 font-semibold border border-orange-500 px-2 py-1 rounded text-xs hover:bg-orange-50">Mark Delivered</button>
                     )}
@@ -326,6 +340,41 @@ function AdminDashboard() {
               </form>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Users Tab */}
+      {activeTab === 'users' && (
+        <div className="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b dark:border-gray-700">
+                <th className="p-4">Name</th>
+                <th className="p-4">Email</th>
+                <th className="p-4">Role</th>
+                <th className="p-4">Joined</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                <tr key={user._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="p-4">{user.name}</td>
+                  <td className="p-4">{user.email}</td>
+                  <td className="p-4">
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded ${user.role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-200 dark:text-red-900' : 'bg-blue-100 text-blue-800 dark:bg-blue-200 dark:text-blue-900'}`}>
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </span>
+                  </td>
+                  <td className="p-4">{new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {users.length === 0 && (
+            <div className="p-8 text-center text-gray-500">
+              <p>No users found.</p>
+            </div>
+          )}
         </div>
       )}
 

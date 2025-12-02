@@ -114,3 +114,21 @@ export const updateCurrentUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// @desc    Get all users
+// @route   GET /api/auth/users
+// @access  Private/Admin
+export const getAllUsers = async (req, res) => {
+  try {
+    // Check if user is admin
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized. Admin access required.' });
+    }
+
+    const users = await User.find({}).select('-password');
+    res.json({ success: true, data: users });
+  } catch (err) {
+    console.error('getAllUsers error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
