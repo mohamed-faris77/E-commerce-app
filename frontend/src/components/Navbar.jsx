@@ -62,10 +62,10 @@ function Navbar({ theme, setTheme }) {
       {isAdmin ? (
         <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto">
           <div className="flex items-center gap-5 text-sm text-gray-700 dark:text-gray-300">
-            <Link to="/" className="flex items-center gap-2 font-bold text-lg mr-4">
+            <div className="flex items-center gap-2 font-bold text-lg mr-4">
               <img src={logo} alt="Famazon Logo" className="h-10 w-auto" />
               <span className="ml-2 text-xl font-extrabold text-gray-900 dark:text-white">Famazon</span>
-            </Link>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/admin" className="text-blue-500 hover:underline">Admin Dashboard</Link>
@@ -158,10 +158,10 @@ function Navbar({ theme, setTheme }) {
       {/* Mobile Navbar */}
       {isAdmin ? (
         <div className="flex md:hidden justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <img src={logo} alt="Famazon Logo" className="h-10 w-auto" />
             <span className="ml-2 text-lg font-bold">Famazon</span>
-          </Link>
+          </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               <Menu size={24} />
