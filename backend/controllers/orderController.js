@@ -37,6 +37,16 @@ const returnOrder = async (req, res) => {
   if (!order.paidAt) {
     order.paidAt = Date.now();
   }
+
+  // Restore stock for each returned item
+  for (const item of order.orderItems) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.stock = product.stock + item.qty;
+      await product.save();
+    }
+  }
+
   const updated = await order.save();
   res.json(updated);
 };

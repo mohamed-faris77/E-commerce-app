@@ -76,6 +76,11 @@ const orderSchema = mongoose.Schema({
     required: true,
     default: false,
   },
+  isRefunded: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

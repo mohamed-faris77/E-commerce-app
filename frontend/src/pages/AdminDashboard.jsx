@@ -146,17 +146,21 @@ function AdminDashboard() {
   if (error) return <div className="pt-24 text-center text-red-500">Error: {error}</div>;
 
   return (
-    <div className="pt-24 max-w-7xl mx-auto px-4 min-h-screen pb-12">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-
-      {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b overflow-x-auto">
-        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'overview' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
-        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'products' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('products')}>Products</button>
-        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'orders' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('orders')}>Orders</button>
-        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'users' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
-        <button className={`pb-2 px-4 whitespace-nowrap ${activeTab === 'contacts' ? 'border-b-2 border-yellow-400 font-bold' : ''}`} onClick={() => setActiveTab('contacts')}>Contact Messages</button>
+    <div className="pt-24 max-w-7xl mx-auto px-4 min-h-screen pb-12 flex flex-col md:flex-row">
+      {/* Sidebar */}
+      <div className="w-full md:w-64 bg-white dark:bg-gray-800 rounded shadow p-4 mb-8 md:mb-0 md:mr-8">
+        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <nav className="space-y-2">
+          <button className={`block w-full text-left p-3 rounded transition-colors ${activeTab === 'overview' ? 'bg-yellow-400 text-black font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setActiveTab('overview')}>Overview</button>
+          <button className={`block w-full text-left p-3 rounded transition-colors ${activeTab === 'products' ? 'bg-yellow-400 text-black font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setActiveTab('products')}>Products</button>
+          <button className={`block w-full text-left p-3 rounded transition-colors ${activeTab === 'orders' ? 'bg-yellow-400 text-black font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setActiveTab('orders')}>Orders</button>
+          <button className={`block w-full text-left p-3 rounded transition-colors ${activeTab === 'users' ? 'bg-yellow-400 text-black font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setActiveTab('users')}>Users</button>
+          <button className={`block w-full text-left p-3 rounded transition-colors ${activeTab === 'contacts' ? 'bg-yellow-400 text-black font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`} onClick={() => setActiveTab('contacts')}>Contact Messages</button>
+        </nav>
       </div>
+
+      {/* Main Content */}
+      <div className="flex-1">
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
@@ -419,6 +423,8 @@ function AdminDashboard() {
           )}
         </div>
       )}
+
+      </div>
 
       {/* Alert Modal */}
       <Modal
