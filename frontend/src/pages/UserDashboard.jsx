@@ -240,6 +240,8 @@ const UserDashboard = () => {
                       <p className="text-sm font-medium mb-1">
                         {order.isCancelled ? (
                           <span className="text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">Cancelled</span>
+                        ) : order.isRefunded ? (
+                          <span className="text-purple-500 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded">Refunded</span>
                         ) : order.isReturned ? (
                           <span className="text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">Returned</span>
                         ) : order.isDelivered ? (

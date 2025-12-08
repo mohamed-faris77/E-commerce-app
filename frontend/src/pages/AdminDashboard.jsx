@@ -112,6 +112,16 @@ function AdminDashboard() {
     }
   };
 
+  const handleRefundOrder = async (orderId) => {
+    try {
+      const { data } = await api.put(`/orders/${orderId}/refund`);
+      setOrders(orders.map(order => order._id === orderId ? data : order));
+      setAlertModal({ isOpen: true, title: 'Success', message: 'Order refunded successfully', type: 'success', showActions: false });
+    } catch (err) {
+      setAlertModal({ isOpen: true, title: 'Error', message: 'Error refunding order: ' + (err.response?.data?.message || err.message), type: 'error' });
+    }
+  };
+
   const handleSubmitProduct = async (e) => {
     e.preventDefault();
     const productData = {
@@ -280,6 +290,15 @@ function AdminDashboard() {
                       <button disabled className="text-gray-400 font-semibold border border-gray-300 px-2 py-1 rounded text-xs cursor-not-allowed" title="Order must be paid first">Mark Delivered</button>
                     ) : (
                       <button onClick={() => handleMarkAsDelivered(order._id)} className="text-orange-500 hover:text-orange-700 font-semibold border border-orange-500 px-2 py-1 rounded text-xs hover:bg-orange-50">Mark Delivered</button>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {order.isRefunded ? (
+                      <span className="text-green-500 font-semibold">✓ Refunded</span>
+                    ) : order.isReturned ? (
+                      <button onClick={() => handleRefundOrder(order._id)} className="text-purple-500 hover:text-purple-700 font-semibold border border-purple-500 px-2 py-1 rounded text-xs hover:bg-purple-50">Refund</button>
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
                 </tr>

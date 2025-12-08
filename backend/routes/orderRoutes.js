@@ -6,6 +6,7 @@ import {
   updateOrderToDelivered,
   cancelOrder,
   returnOrder,
+  refundOrder,
   getMyOrders,
   getOrders,
 } from '../controllers/orderController.js';
@@ -18,6 +19,7 @@ router.route('/myorders').get(protect, getMyOrders);
 router.route('/:id').get(protect, getOrderById);
 router.route('/:id/pay').put(protect, updateOrderToPaid);
 router.route('/:id/deliver').put(protect, authorizeRoles('admin'), updateOrderToDelivered);
+router.route('/:id/refund').put(protect, authorizeRoles('admin'), refundOrder);
 router.route('/:id/cancel').put(protect, cancelOrder);
 router.route('/:id/return').put(protect, returnOrder);
 

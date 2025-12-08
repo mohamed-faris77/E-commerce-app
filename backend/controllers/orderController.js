@@ -51,6 +51,33 @@ const returnOrder = async (req, res) => {
   res.json(updated);
 };
 
+// @desc    Refund a returned order
+// @route   PUT /api/orders/:id/refund
+// @access  Private/Admin
+const refundOrder = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+
+  // Only returned orders can be refunded
+  if (!order.isReturned) {
+    return res.status(400).json({ message: 'Only returned orders can be refunded' });
+  }
+
+  // Prevent double refunds
+  if (order.isRefunded) {
+    return res.status(400).json({ message: 'Order already refunded' });
+  }
+
+  order.isRefunded = true;
+  order.refundedAt = Date.now();
+
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+};
+
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
@@ -192,6 +219,7 @@ export {
   updateOrderToDelivered,
   cancelOrder,
   returnOrder,
+  refundOrder,
   getMyOrders,
   getOrders,
 };
